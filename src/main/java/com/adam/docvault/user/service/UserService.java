@@ -8,6 +8,9 @@ import com.adam.docvault.user.repository.UserRepository;
 import com.adam.docvault.user.dto.UserResponseDTO;
 import com.adam.docvault.user.entity.User;
 import com.adam.docvault.user.exception.EmailAlreadyExistsException;
+import com.adam.docvault.user.exception.InvalidCredentialsException;
+import com.adam.docvault.user.dto.LoginRequest;
+import com.adam.docvault.user.dto.LoginResponse;
 import com.adam.docvault.user.dto.RegisterRequest;
 
 @Service
@@ -46,5 +49,25 @@ public class UserService {
         User savedUser = userRepository.save(user);
 
         return userMapper.toResponse(savedUser);
+    }
+
+    public LoginResponse login(LoginRequest request) {
+
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(InvalidCredentialsException::new);
+
+        boolean passwordMatches = passwordEncoder.matches(
+                request.password(),
+                user.getPassword()
+        );
+
+        if (!passwordMatches) {
+            throw new InvalidCredentialsException();
+        }
+
+        return new LoginResponse(
+                user.getEmail(),
+                user.getRole()
+        );
     }
 }
