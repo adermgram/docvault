@@ -9,6 +9,7 @@ import com.adam.docvault.user.dto.UserResponseDTO;
 import com.adam.docvault.user.entity.User;
 import com.adam.docvault.user.exception.EmailAlreadyExistsException;
 import com.adam.docvault.user.exception.InvalidCredentialsException;
+import com.adam.docvault.security.JwtService;
 import com.adam.docvault.user.dto.LoginRequest;
 import com.adam.docvault.user.dto.LoginResponse;
 import com.adam.docvault.user.dto.RegisterRequest;
@@ -19,15 +20,18 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+    private final JwtService jwtService;
 
     public UserService(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
-            UserMapper userMapper
+            UserMapper userMapper,
+            JwtService jwtService
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userMapper = userMapper;
+        this.jwtService = jwtService;
     }
 
     public UserResponseDTO register(RegisterRequest request) {
@@ -65,9 +69,8 @@ public class UserService {
             throw new InvalidCredentialsException();
         }
 
-        return new LoginResponse(
-                user.getEmail(),
-                user.getRole()
-        );
+        String token = jwtService.generateToken(user);
+
+        return new LoginResponse(token);
     }
 }
