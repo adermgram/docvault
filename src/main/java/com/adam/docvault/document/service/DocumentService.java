@@ -1,0 +1,71 @@
+package com.adam.docvault.document.service;
+
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.adam.docvault.document.entity.Document;
+import com.adam.docvault.document.exception.DocumentNotFoundException;
+import com.adam.docvault.document.repository.DocumentRepository;
+import com.adam.docvault.document.storage.StorageService;
+import com.adam.docvault.user.entity.User;
+import com.adam.docvault.document.dto.DocumentResponseDTO;
+
+@Service
+public class DocumentService {
+    private final DocumentRepository documentRepository;
+    private final StorageService storageService;
+
+    public DocumentService(DocumentRepository documentRepository, StorageService storageService) {
+        this.documentRepository = documentRepository;
+        this.storageService = storageService;
+    }
+
+    public DocumentResponseDTO getDocument(UUID documentId, User user) {
+
+        Document document = documentRepository
+                .findByIdAndOwnerId(documentId, user.getId())
+                .orElseThrow(DocumentNotFoundException::new);
+
+        return toResponseDTO(document);
+        
+    }
+
+    public DocumentResponseDTO uploadDocument(MultipartFile file, User user){
+        String storageKey = storageService.store(file);
+
+        try{
+            Document document = new Document(
+                user,
+                file.getOriginalFilename(),
+                file.getContentType(),
+                file.getSize(),
+                storageKey
+            );   
+
+            Document savedDocument = documentRepository.save(document);
+
+            return toResponseDTO(savedDocument);
+
+        } catch (RuntimeException e){
+
+            storageService.delete(storageKey);
+
+            throw e;
+        }
+        
+
+    }
+
+    private DocumentResponseDTO toResponseDTO(Document document){
+         return new DocumentResponseDTO(
+                document.getId(),
+                document.getOriginalFilename(),
+                document.getContentType(),
+                document.getSize(),
+                document.getCreatedAt(),
+                document.getUpdatedAt()
+         );
+    }
+}

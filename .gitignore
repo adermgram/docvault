@@ -37,3 +37,6 @@ build/
 
 # logs
 * .log
+
+#storage
+/storage

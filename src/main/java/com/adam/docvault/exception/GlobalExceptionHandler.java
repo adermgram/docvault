@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.adam.docvault.common.dto.ErrorResponseDTO;
+import com.adam.docvault.document.exception.DocumentNotFoundException;
+import com.adam.docvault.document.exception.StorageException;
 import com.adam.docvault.user.exception.EmailAlreadyExistsException;
 import com.adam.docvault.user.exception.InvalidCredentialsException;
 
@@ -51,5 +53,43 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(error);
     }
+
+    @ExceptionHandler(StorageException.class)
+    public ResponseEntity<ErrorResponseDTO> handleStorageException(
+            StorageException exception,
+            HttpServletRequest request
+    ){
+
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                Instant.now(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                exception.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(error);
+    }
+
+
+    @ExceptionHandler(DocumentNotFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleDocumentNotFound(
+            DocumentNotFoundException exception,
+            HttpServletRequest request
+    ){
+
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                Instant.now(),
+                HttpStatus.NOT_FOUND.value(),
+                exception.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(error);
+    }
+
 
 }
