@@ -120,6 +120,7 @@ POST /api/auth/login
 ```text
 POST /api/documents
 GET  /api/documents/{documentId}
+GET /api/documents/{documentId}/download
 ```
 
 ### Upload
@@ -157,7 +158,7 @@ Current focus:
 * Document upload and storage
 * Document metadata management
 
-Planned features include document downloading, deletion, validation, improved storage handling, pagination, search, testing, and additional security hardening.
+Planned features include document deletion, validation, improved storage handling, pagination, search, testing, and additional security hardening.
 
 ## Development Philosophy
 

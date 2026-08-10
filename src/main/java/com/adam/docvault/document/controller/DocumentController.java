@@ -11,9 +11,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.adam.docvault.document.dto.DocumentDownload;
 import com.adam.docvault.document.dto.DocumentResponseDTO;
 import com.adam.docvault.document.service.DocumentService;
 import com.adam.docvault.user.entity.User;
+
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
 @RestController
 @RequestMapping("/api/documents")
@@ -35,5 +41,30 @@ public class DocumentController {
     @PostMapping
     public DocumentResponseDTO uploadDocument(@RequestParam("file") MultipartFile file,  @AuthenticationPrincipal User user){
         return documentService.uploadDocument(file, user);
+    }
+
+    @GetMapping("/{documentId}/download")
+    public ResponseEntity<InputStreamResource> downloadDocument(
+            @PathVariable UUID documentId,
+            @AuthenticationPrincipal User user
+    ) {
+        DocumentDownload download =
+                documentService.downloadDocument(documentId, user);
+
+        InputStreamResource resource =
+                new InputStreamResource(download.inputStream());
+
+        return ResponseEntity.ok()
+                .contentType(
+                        MediaType.parseMediaType(download.contentType())
+                )
+                .contentLength(download.size())
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" +
+                        download.originalFilename() +
+                        "\""
+                )
+                .body(resource);
     }
 }

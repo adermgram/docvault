@@ -1,6 +1,7 @@
 package com.adam.docvault.document.storage;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
@@ -62,6 +63,17 @@ public class LocalStorageService implements StorageService {
             Files.deleteIfExists(destination);
         } catch (IOException e) {
             throw new StorageException("Failed to delete file", e);
+        }
+    }
+    
+    @Override
+    public InputStream load(String storageKey) {
+        Path destination = storageLocation.resolve(storageKey);
+
+        try {
+            return Files.newInputStream(destination);
+        } catch (IOException e) {
+            throw new StorageException("Failed to load file", e);
         }
     }
 }

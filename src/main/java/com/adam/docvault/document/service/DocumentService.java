@@ -1,5 +1,6 @@
 package com.adam.docvault.document.service;
 
+import java.io.InputStream;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -10,6 +11,7 @@ import com.adam.docvault.document.exception.DocumentNotFoundException;
 import com.adam.docvault.document.repository.DocumentRepository;
 import com.adam.docvault.document.storage.StorageService;
 import com.adam.docvault.user.entity.User;
+import com.adam.docvault.document.dto.DocumentDownload;
 import com.adam.docvault.document.dto.DocumentResponseDTO;
 
 @Service
@@ -56,6 +58,24 @@ public class DocumentService {
         }
         
 
+    }
+
+    public DocumentDownload downloadDocument(UUID documentId, User user) {
+
+        Document document = documentRepository
+                .findByIdAndOwnerId(documentId, user.getId())
+                .orElseThrow(DocumentNotFoundException::new);
+
+        InputStream inputStream = storageService.load(
+                document.getStorageKey()
+        );
+
+        return new DocumentDownload(
+                inputStream,
+                document.getContentType(),
+                document.getOriginalFilename(),
+                document.getSize()
+        );
     }
 
     private DocumentResponseDTO toResponseDTO(Document document){
