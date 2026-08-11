@@ -13,6 +13,7 @@ import com.adam.docvault.document.storage.StorageService;
 import com.adam.docvault.user.entity.User;
 import com.adam.docvault.document.dto.DocumentDownload;
 import com.adam.docvault.document.dto.DocumentResponseDTO;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class DocumentService {
@@ -76,6 +77,20 @@ public class DocumentService {
                 document.getOriginalFilename(),
                 document.getSize()
         );
+    }
+
+
+    @Transactional
+    public void deleteDocument(UUID documentId, User user){
+        
+        Document document = documentRepository
+                .findByIdAndOwnerId(documentId, user.getId())
+                .orElseThrow(DocumentNotFoundException::new);
+
+        documentRepository.delete(document);
+
+        storageService.delete(document.getStorageKey());
+
     }
 
     private DocumentResponseDTO toResponseDTO(Document document){
