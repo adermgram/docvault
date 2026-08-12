@@ -8,9 +8,11 @@ import org.springframework.web.bind.annotation.*;
 
 import com.adam.docvault.common.dto.ErrorResponseDTO;
 import com.adam.docvault.document.exception.DocumentNotFoundException;
+import com.adam.docvault.document.exception.InvalidFileException;
 import com.adam.docvault.document.exception.StorageException;
 import com.adam.docvault.user.exception.EmailAlreadyExistsException;
 import com.adam.docvault.user.exception.InvalidCredentialsException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -90,6 +92,43 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.NOT_FOUND)
                 .body(error);
     }
+
+
+    @ExceptionHandler(InvalidFileException.class)
+    public ResponseEntity<ErrorResponseDTO> handleInvalidFile(
+            InvalidFileException exception,
+            HttpServletRequest request
+    ){
+
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                Instant.now(),
+                HttpStatus.UNSUPPORTED_MEDIA_TYPE.value(),
+                exception.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+                .body(error);
+    }
+
+
+        @ExceptionHandler(MaxUploadSizeExceededException.class)
+        public ResponseEntity<ErrorResponseDTO> handleMaxUploadSizeExceeded(
+                MaxUploadSizeExceededException exception,
+                HttpServletRequest request
+        ) {
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                Instant.now(),
+                HttpStatus.CONTENT_TOO_LARGE.value(),
+                "File exceeds the maximum allowed size",
+                request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.CONTENT_TOO_LARGE)
+                .body(error);
+        }
 
 
 }

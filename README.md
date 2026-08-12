@@ -159,7 +159,7 @@ Current focus:
 * Document upload and storage
 * Document metadata management
 
-Planned features include document validation, improved storage handling, pagination, search, testing, and additional security hardening.
+Planned features include improved storage handling, pagination, search, testing, and additional security hardening.
 
 ## Development Philosophy
 

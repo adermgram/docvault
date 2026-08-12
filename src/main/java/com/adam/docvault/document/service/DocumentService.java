@@ -10,6 +10,7 @@ import com.adam.docvault.document.entity.Document;
 import com.adam.docvault.document.exception.DocumentNotFoundException;
 import com.adam.docvault.document.repository.DocumentRepository;
 import com.adam.docvault.document.storage.StorageService;
+import com.adam.docvault.document.validation.FileValidator;
 import com.adam.docvault.user.entity.User;
 import com.adam.docvault.document.dto.DocumentDownload;
 import com.adam.docvault.document.dto.DocumentResponseDTO;
@@ -19,10 +20,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class DocumentService {
     private final DocumentRepository documentRepository;
     private final StorageService storageService;
+    private final FileValidator fileValidator;
 
-    public DocumentService(DocumentRepository documentRepository, StorageService storageService) {
+    public DocumentService(DocumentRepository documentRepository, StorageService storageService, FileValidator fileValidator) {
         this.documentRepository = documentRepository;
         this.storageService = storageService;
+        this.fileValidator = fileValidator;
     }
 
     public DocumentResponseDTO getDocument(UUID documentId, User user) {
@@ -36,13 +39,14 @@ public class DocumentService {
     }
 
     public DocumentResponseDTO uploadDocument(MultipartFile file, User user){
+        String contentType = fileValidator.validate(file);
         String storageKey = storageService.store(file);
 
         try{
             Document document = new Document(
                 user,
                 file.getOriginalFilename(),
-                file.getContentType(),
+                contentType,
                 file.getSize(),
                 storageKey
             );   
