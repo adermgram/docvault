@@ -90,6 +90,13 @@ public class User implements UserDetails {
         return password;
     }
 
+    public void promoteToAdmin() {
+        this.role = Role.ADMIN;
+    }
+
+    public void demoteToUser() {
+        this.role = Role.USER;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

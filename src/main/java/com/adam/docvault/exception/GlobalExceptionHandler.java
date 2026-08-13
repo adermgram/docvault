@@ -3,6 +3,7 @@ package com.adam.docvault.exception;
 import java.time.Instant;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,7 +13,9 @@ import com.adam.docvault.document.exception.InvalidFileException;
 import com.adam.docvault.document.exception.StorageException;
 import com.adam.docvault.user.exception.EmailAlreadyExistsException;
 import com.adam.docvault.user.exception.InvalidCredentialsException;
+import com.adam.docvault.user.exception.UserNotFoundException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import com.adam.docvault.exception.IllegalOperationException;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -127,6 +130,42 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.CONTENT_TOO_LARGE)
+                .body(error);
+        }
+
+
+        
+        @ExceptionHandler(UserNotFoundException.class)
+        public ResponseEntity<ErrorResponseDTO> handleUserNotFound(
+                UserNotFoundException exception,
+                HttpServletRequest request
+        ) {
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                Instant.now(),
+                HttpStatus.NOT_FOUND.value(),
+                exception.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(error);
+        }
+
+        @ExceptionHandler(IllegalOperationException.class)
+        public ResponseEntity<ErrorResponseDTO> handleIllegalOperaion(
+                IllegalOperationException exception,
+                HttpServletRequest request
+        ){
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                Instant.now(),
+                HttpStatus.FORBIDDEN.value(),
+                exception.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
                 .body(error);
         }
 

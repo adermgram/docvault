@@ -54,6 +54,16 @@ public class SecurityConfig {
                             }
                             """);
                     })
+                    .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setContentType("application/json");
+
+                    response.getWriter().write("""
+                        {
+                            "message": "Access denied"
+                        }
+                        """);
+                    })
                 )
                 //.httpBasic(Customizer.withDefaults());
                 .formLogin(form -> form.disable())
