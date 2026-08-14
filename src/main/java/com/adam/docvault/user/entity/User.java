@@ -98,6 +98,14 @@ public class User implements UserDetails {
         this.role = Role.USER;
     }
 
+    public Instant getCreatedAt(){
+        return createdAt;
+    }
+
+    public Instant getUpdatedAt(){
+        return updatedAt;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(

@@ -124,6 +124,15 @@ GET /api/documents/{documentId}/download
 DELETE /api/documents/{documentId}
 ```
 
+### Admin
+All admin routes are protected
+
+```text
+PATCH /api/admin/users/{userId}/promote
+PATCH /api/admin/{userId}/demote
+GET  /api/admin/user
+```
+
 ### Upload
 
 Documents are uploaded as `multipart/form-data`.
@@ -159,7 +168,7 @@ Current focus:
 * Document upload and storage
 * Document metadata management
 
-Planned features include improved storage handling, pagination, search, testing, and additional security hardening.
+Planned features include improved storage handling, testing, and additional security hardening.
 
 ## Development Philosophy
 

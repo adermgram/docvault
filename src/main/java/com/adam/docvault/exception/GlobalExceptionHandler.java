@@ -16,6 +16,7 @@ import com.adam.docvault.user.exception.InvalidCredentialsException;
 import com.adam.docvault.user.exception.UserNotFoundException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import com.adam.docvault.exception.IllegalOperationException;
+import com.adam.docvault.exception.InvalidRequestException;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -159,13 +160,30 @@ public class GlobalExceptionHandler {
         ){
         ErrorResponseDTO error = new ErrorResponseDTO(
                 Instant.now(),
-                HttpStatus.FORBIDDEN.value(),
+                HttpStatus.BAD_REQUEST.value(),
                 exception.getMessage(),
                 request.getRequestURI()
         );
 
         return ResponseEntity
-                .status(HttpStatus.FORBIDDEN)
+                .status(HttpStatus.BAD_REQUEST)
+                .body(error);
+        }
+
+        @ExceptionHandler(InvalidRequestException.class)
+        public ResponseEntity<ErrorResponseDTO> handlelnvalidRequest(
+                InvalidRequestException exception,
+                HttpServletRequest request
+        ){
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                Instant.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                exception.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
                 .body(error);
         }
 
