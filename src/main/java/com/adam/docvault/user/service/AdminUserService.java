@@ -1,11 +1,9 @@
 package com.adam.docvault.user.service;
 
-import java.util.Arrays;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +15,7 @@ import com.adam.docvault.user.entity.User;
 import com.adam.docvault.user.exception.UserNotFoundException;
 import com.adam.docvault.user.repository.UserRepository;
 import com.adam.docvault.user.validation.UserSortField;
+import com.adam.docvault.validation.SortValidator;
 
 @Service
 public class AdminUserService {
@@ -77,7 +76,7 @@ public class AdminUserService {
             );
         }
         
-        validateSortFields(pageable);
+        SortValidator.validate(pageable, UserSortField.values());
         
         if (search == null || search.isBlank()) {
             return userRepository.findAll(pageable)
@@ -92,24 +91,6 @@ public class AdminUserService {
                     pageable
             )
             .map(this::toResponseDTO);
-    }
-
-
-    private void validateSortFields(Pageable pageable) {
-
-        for (Sort.Order order : pageable.getSort()) {
-
-            boolean allowed = Arrays.stream(UserSortField.values())
-                    .anyMatch(field ->
-                            field.getProperty().equals(order.getProperty())
-                    );
-
-            if (!allowed) {
-                throw new InvalidRequestException(
-                        "Invalid sort field: " + order.getProperty()
-                );
-            }
-        }
     }
 
     private AdminUserResponseDTO toResponseDTO(User user) {

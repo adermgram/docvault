@@ -1,18 +1,18 @@
-package com.adam.docvault.user.validation;
+package com.adam.docvault.document.validation;
 
 import com.adam.docvault.validation.SortField;
 
-public enum UserSortField  implements SortField{
-    FIRST_NAME("firstName"),
-    LAST_NAME("lastName"),
-    EMAIL("email"),
-    ROLE("role"),
+public enum DocumentSortField implements SortField{
+    ORIGINAL_FILENAME("originalFilename"),
+    CONTENT_TYPE("contentType"),
+    SIZE("size"),
     CREATED_AT("createdAt"),
     UPDATED_AT("updatedAt");
 
+    
     private final String property;
 
-    UserSortField(String property) {
+    DocumentSortField(String property) {
         this.property = property;
     }
 
@@ -20,4 +20,5 @@ public enum UserSortField  implements SortField{
     public String getProperty() {
         return property;
     }
+
 }

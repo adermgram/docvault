@@ -19,6 +19,8 @@ import com.adam.docvault.document.service.DocumentService;
 import com.adam.docvault.user.entity.User;
 
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -78,5 +80,14 @@ public class DocumentController {
             @AuthenticationPrincipal User user
     ) {
         documentService.deleteDocument(documentId, user);
+    }
+
+    @GetMapping
+    public Page<DocumentResponseDTO> getDocuments(
+        @AuthenticationPrincipal User user,
+         @RequestParam(required = false) String search,
+        Pageable pageable
+    ) {
+        return documentService.getDocuments(user, search, pageable);
     }
 }

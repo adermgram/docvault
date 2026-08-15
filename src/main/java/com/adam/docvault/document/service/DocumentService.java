@@ -3,6 +3,8 @@ package com.adam.docvault.document.service;
 import java.io.InputStream;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -10,8 +12,10 @@ import com.adam.docvault.document.entity.Document;
 import com.adam.docvault.document.exception.DocumentNotFoundException;
 import com.adam.docvault.document.repository.DocumentRepository;
 import com.adam.docvault.document.storage.StorageService;
+import com.adam.docvault.document.validation.DocumentSortField;
 import com.adam.docvault.document.validation.FileValidator;
 import com.adam.docvault.user.entity.User;
+import com.adam.docvault.validation.SortValidator;
 import com.adam.docvault.document.dto.DocumentDownload;
 import com.adam.docvault.document.dto.DocumentResponseDTO;
 import org.springframework.transaction.annotation.Transactional;
@@ -96,6 +100,23 @@ public class DocumentService {
         storageService.delete(document.getStorageKey());
 
     }
+
+    public Page<DocumentResponseDTO> getDocuments(User user, String search, Pageable pageable){
+
+        SortValidator.validate(pageable, DocumentSortField.values());
+         
+        if (search == null || search.isBlank()) {
+            return documentRepository
+                .findByOwnerId(user.getId(), pageable)
+                .map(this::toResponseDTO);
+        }
+
+        return  documentRepository
+                .findByOwnerIdAndOriginalFilenameContainingIgnoreCase(user.getId(), search, pageable)
+                .map(this::toResponseDTO);
+       
+    }
+    
 
     private DocumentResponseDTO toResponseDTO(Document document){
          return new DocumentResponseDTO(

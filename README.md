@@ -17,7 +17,10 @@ The project is being developed incrementally with a focus on clean architecture,
 * Role-based authorities
 * Method-level security with `@PreAuthorize`
 * Authenticated user injection with `@AuthenticationPrincipal`
+* Custom `401 Unauthorized` responses
+* Custom `403 Forbidden` responses
 * Protected API endpoints
+* Prevention of unauthorized document access
 
 ### Document Management
 
@@ -28,8 +31,51 @@ The project is being developed incrementally with a focus on clean architecture,
 * Content type and file size metadata
 * Document ownership tied to the authenticated user
 * Owner-restricted document retrieval
+* Owner-restricted document listing
+* Paginated document listing
+* Case-insensitive filename search
+* Document sorting
+* Document sort-field allowlisting
+* Maximum page-size protection
 * Document metadata returned through DTOs
+* Download documents
+* Delete documents
 * Automatic cleanup of stored files when database persistence fails
+
+### File Validation
+
+* Empty-file validation
+* Maximum file-size validation
+* Apache Tika-based file type detection
+* MIME type validation based on detected file content
+* Allowlisted file types
+* Protection against manually manipulated client-provided content types
+* Multipart upload size protection
+* Custom `413 Payload Too Large` handling,
+
+Supported file types currently include:
+
+```text
+PDF
+DOCX
+TXT
+PNG
+JPEG
+```
+
+### Admin User Management
+* Promote users to ADMIN
+* Demote administrators to regular users
+* Prevent administrators from demoting themselves
+* Prevent demotion of the last remaining administrator
+* Prevent promoting an already-admin user
+* Paginated user listing
+* User search by first name, last name, or email
+* Case-insensitive user search
+* User sorting
+* User sort-field allowlisting
+* Maximum page-size protection
+* Passwords excluded from administrator responses
 
 ## Architecture
 
@@ -71,9 +117,21 @@ Document retrieval uses an ownership-aware repository query:
 Optional<Document> findByIdAndOwnerId(UUID id, UUID userId);
 ```
 
-This prevents a user from accessing another user's document simply by knowing its UUID.
+and 
 
-If a document doesn't exist or doesn't belong to the authenticated user, the API returns `404 Document Not Found`.
+```java
+Page<Document> findByOwnerId(UUID userId, Pageable pageable);
+```
+
+This prevents a user from accessing or listing another user's documents simply by knowing their UUID.
+
+Document listing always derives the owner ID from the authenticated user's security context rather than accepting an owner ID from the client.
+
+If a document doesn't exist or doesn't belong to the authenticated user, the API returns:
+
+```text
+404 Document Not Found
+```
 
 ## Storage Design
 
@@ -106,6 +164,57 @@ Storage key:
 
 The original filename is retained for user-facing purposes while the storage key remains an internal implementation detail.
 
+### Pagination, Search & Sorting
+Pagination, Search & Sorting
+
+```text
+GET /api/documents?page=0&size=10
+```
+
+Filename search:
+```text
+GET /api/documents?search=report
+```
+
+Sorting:
+```text
+GET /api/documents?sort=createdAt,desc
+```
+
+Search and sorting can also be combined:
+```text
+GET /api/documents?search=report&sort=originalFilename,asc&page=0&size=10
+```
+Admin user listing provides similar pagination, search, and sorting functionality.
+
+### Sort Field Allowlisting
+Client-provided sort fields are validated against application-defined allowlists.
+
+For example, document sorting currently allows:
+```text
+originalFilename
+contentType
+size
+createdAt
+updatedAt
+```
+Internal fields such as `storageKey` and `owner` are not exposed as sortable API fields.
+
+Sort validation is implemented through a reusable `SortField` abstraction and `SortValidator`, allowing different resources to define their own supported sort fields without duplicating validation logic.
+
+### Page Size Protection
+API endpoints enforce a maximum page size to prevent unreasonable requests.
+
+The current maximum page size is:
+```text
+50
+```
+
+Requests exceeding this limit return:
+```text
+400 Bad Request
+```
+
 ## API
 
 ### Authentication
@@ -119,19 +228,28 @@ POST /api/auth/login
 
 ```text
 POST /api/documents
+GET /api/documents
 GET  /api/documents/{documentId}
 GET /api/documents/{documentId}/download
 DELETE /api/documents/{documentId}
 ```
 
 ### Admin
-All admin routes are protected
+All admin routes are protected with administrator authorization.
 
 ```text
 PATCH /api/admin/users/{userId}/promote
-PATCH /api/admin/{userId}/demote
-GET  /api/admin/user
+PATCH /api/admin/users/{userId}/demote
+GET   /api/admin/users
 ```
+
+Admin user listing supports:
+```text
+GET /api/admin/users?page=0&size=10
+GET /api/admin/users?search=adam
+GET /api/admin/users?sort=createdAt,desc
+```
+Search, pagination, and sorting can be combined.
 
 ### Upload
 
@@ -144,6 +262,7 @@ file
 ```
 
 The authenticated user is determined by the JWT rather than being supplied by the client.
+
 
 ## Technology Stack
 
@@ -166,9 +285,13 @@ Current focus:
 * Authentication and authorization
 * Secure document ownership
 * Document upload and storage
+* Document validation
 * Document metadata management
+* User administration
+* Pagination, search, and sorting
+* API security hardening
 
-Planned features include improved storage handling, testing, and additional security hardening.
+Planned features include improved storage handling, automated testing, additional security hardening, and further document management functionality.
 
 ## Development Philosophy
 
@@ -185,3 +308,7 @@ Key principles include:
 * Avoiding unnecessary duplication
 * Keeping controllers thin
 * Letting Spring handle framework responsibilities where appropriate
+* Validating client-controlled input
+* Enforcing security at the data-access boundary where appropriate
+
+
