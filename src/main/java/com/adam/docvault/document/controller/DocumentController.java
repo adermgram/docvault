@@ -84,10 +84,11 @@ public class DocumentController {
 
     @GetMapping
     public Page<DocumentResponseDTO> getDocuments(
-        @AuthenticationPrincipal User user,
-         @RequestParam(required = false) String search,
-        Pageable pageable
+             @AuthenticationPrincipal User user,
+             @RequestParam(required = false) String search,
+             @RequestParam(required = false) String type,
+             Pageable pageable
     ) {
-        return documentService.getDocuments(user, search, pageable);
+        return documentService.getDocuments(user, search, type, pageable);
     }
 }

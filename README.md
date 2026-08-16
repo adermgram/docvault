@@ -234,6 +234,13 @@ GET /api/documents/{documentId}/download
 DELETE /api/documents/{documentId}
 ```
 
+Document listing supports:
+```text
+GET /api/documents?type=pdf
+GET /api/documents?search=doesnotexist&type=PDF
+GET /api/documents?type=PDF&search=report&page=0&size=10&sort=createdAt,desc
+```
+
 ### Admin
 All admin routes are protected with administrator authorization.
 

@@ -1,6 +1,7 @@
 package com.adam.docvault.document.service;
 
 import java.io.InputStream;
+import java.util.Locale;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -12,8 +13,10 @@ import com.adam.docvault.document.entity.Document;
 import com.adam.docvault.document.exception.DocumentNotFoundException;
 import com.adam.docvault.document.repository.DocumentRepository;
 import com.adam.docvault.document.storage.StorageService;
+import com.adam.docvault.document.validation.AllowedFileType;
 import com.adam.docvault.document.validation.DocumentSortField;
 import com.adam.docvault.document.validation.FileValidator;
+import com.adam.docvault.exception.InvalidRequestException;
 import com.adam.docvault.user.entity.User;
 import com.adam.docvault.validation.SortValidator;
 import com.adam.docvault.document.dto.DocumentDownload;
@@ -101,20 +104,58 @@ public class DocumentService {
 
     }
 
-    public Page<DocumentResponseDTO> getDocuments(User user, String search, Pageable pageable){
+    public Page<DocumentResponseDTO> getDocuments(User user, String search, String type, Pageable pageable){
+
+        AllowedFileType fileType = null;
+
+        boolean hasSearch = search != null && !search.isBlank();
+        boolean hasType = type != null && !type.isBlank();  
 
         SortValidator.validate(pageable, DocumentSortField.values());
-         
-        if (search == null || search.isBlank()) {
+
+        if (hasType) {
+            fileType = parseFileType(type);
+        }
+
+
+        if(!hasSearch && !hasType ){
             return documentRepository
                 .findByOwnerId(user.getId(), pageable)
                 .map(this::toResponseDTO);
         }
 
-        return  documentRepository
+        if (hasSearch && !hasType){
+            return documentRepository
                 .findByOwnerIdAndOriginalFilenameContainingIgnoreCase(user.getId(), search, pageable)
                 .map(this::toResponseDTO);
-       
+        }
+        
+        if(!hasSearch && hasType){
+            return documentRepository
+                    .findByOwnerIdAndContentType(user.getId(), fileType.getMimeType(), pageable)
+                    .map(this::toResponseDTO);
+        }
+
+
+        return documentRepository.findByOwnerIdAndContentTypeAndOriginalFilenameContainingIgnoreCase(user.getId(), fileType.getMimeType(), search, pageable)
+            .map(this::toResponseDTO);
+    }
+
+    private AllowedFileType parseFileType(String typeString) {
+
+        if (typeString == null || typeString.isBlank()) {
+            throw new InvalidRequestException("File type cannot be blank");
+        }
+
+        try {
+            return AllowedFileType.valueOf(
+                    typeString.toUpperCase(Locale.ROOT)
+            );
+        } catch (IllegalArgumentException e) {
+            throw new InvalidRequestException(
+                    "Invalid file type: " + typeString
+            );
+        }
     }
     
 

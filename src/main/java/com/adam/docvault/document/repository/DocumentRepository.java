@@ -16,4 +16,17 @@ public interface DocumentRepository extends JpaRepository<Document, UUID> {
         String filename,
         Pageable pageable
     );
+    Page<Document> findByOwnerIdAndContentType(
+            UUID userId,
+            String contentType,
+            Pageable pageable
+    );
+
+    Page<Document> findByOwnerIdAndContentTypeAndOriginalFilenameContainingIgnoreCase(
+            UUID userId,
+            String contentType,
+            String filename,
+            Pageable pageable
+    );
+
 }
