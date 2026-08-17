@@ -4,6 +4,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 import com.adam.docvault.user.entity.User;
 
@@ -16,6 +17,7 @@ public class TestController {
         return "This endpoint is public";
     }
 
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/private")
     public String privateEndpoint(Authentication authentication) {
         User user = (User) authentication.getPrincipal();

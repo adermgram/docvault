@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springdoc.core.annotations.ParameterObject;
 
 import com.adam.docvault.document.dto.DocumentDownload;
 import com.adam.docvault.document.dto.DocumentResponseDTO;
@@ -26,6 +27,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
+
+
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/documents")
 public class DocumentController {
@@ -43,10 +54,42 @@ public class DocumentController {
 
     }
 
-    @PostMapping
-    public DocumentResponseDTO uploadDocument(@RequestParam("file") MultipartFile file,  @AuthenticationPrincipal User user){
+
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(
+        summary = "Upload a document",
+        description = "Uploads a document for the authenticated user."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "Document uploaded successfully"
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid request"
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Authentication required"
+        ),
+        @ApiResponse(
+            responseCode = "413",
+            description = "File exceeds the maximum allowed size"
+        ),
+        @ApiResponse(
+            responseCode = "415",
+            description = "Unsupported file type"
+        )
+    })
+    public DocumentResponseDTO uploadDocument(
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal User user
+    ) {
         return documentService.uploadDocument(file, user);
     }
+
+
 
     @GetMapping("/{documentId}/download")
     public ResponseEntity<InputStreamResource> downloadDocument(
@@ -82,12 +125,33 @@ public class DocumentController {
         documentService.deleteDocument(documentId, user);
     }
 
+
     @GetMapping
+    @Operation(
+        summary = "Get user's documents",
+        description = "Returns a paginated list of documents owned by the authenticated user. "
+                    + "Documents can be searched by filename and filtered by file type."
+    )
+    @ApiResponse(
+        responseCode = "200",
+        description = "Documents retrieved successfully"
+    )
     public Page<DocumentResponseDTO> getDocuments(
-             @AuthenticationPrincipal User user,
-             @RequestParam(required = false) String search,
-             @RequestParam(required = false) String type,
-             Pageable pageable
+            @AuthenticationPrincipal User user,
+
+            @RequestParam(required = false)
+            String search,
+
+            @Parameter(
+                description = "Filter documents by file type",
+                schema = @Schema(
+                    allowableValues = {"PDF", "DOCX", "TXT", "PNG", "JPEG"}
+                )
+            )
+            @RequestParam(required = false)
+            String type,
+
+            @ParameterObject Pageable pageable
     ) {
         return documentService.getDocuments(user, search, type, pageable);
     }

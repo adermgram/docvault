@@ -17,7 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.adam.docvault.user.dto.AdminUserResponseDTO;
 import com.adam.docvault.user.entity.User;
 import com.adam.docvault.user.service.AdminUserService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
+
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/admin")
 public class AdminController {
