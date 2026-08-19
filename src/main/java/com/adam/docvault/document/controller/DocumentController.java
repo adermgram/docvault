@@ -82,13 +82,14 @@ public class DocumentController {
             description = "Unsupported file type"
         )
     })
+
+
     public DocumentResponseDTO uploadDocument(
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal User user
     ) {
         return documentService.uploadDocument(file, user);
     }
-
 
 
     @GetMapping("/{documentId}/download")

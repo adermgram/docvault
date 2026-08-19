@@ -33,9 +33,6 @@ public class AdminUserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
 
-        System.out.println("Target user: " + user.getEmail());
-        System.out.println("Target role: " + user.getRole());
-
         if (user.getRole() == Role.ADMIN) {
             throw new IllegalOperationException("User is already an admin");
         }
