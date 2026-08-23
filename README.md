@@ -2,7 +2,8 @@
 
 DocVault is a secure document management backend built with **Java, Spring Boot, Spring Security, JPA/Hibernate, and PostgreSQL**.
 
-The project is being developed incrementally with a focus on clean architecture, security, separation of concerns, and understanding how Spring Boot works internally.
+The project was built incrementally as a learning project focused on understanding Spring Boot architecture, authentication, authorization, persistence, file storage, API design, and automated testing.
+
 
 ## Current Features
 
@@ -76,6 +77,24 @@ JPEG
 * User sort-field allowlisting
 * Maximum page-size protection
 * Passwords excluded from administrator responses
+
+### API Documentation
+
+- OpenAPI documentation
+- Swagger UI
+- JWT Bearer authentication support in Swagger UI
+
+### Testing
+
+The project includes unit tests using **JUnit 5 and Mockito** covering important service-layer behavior.
+
+Current test suite:
+
+```text
+Tests run: 18
+Failures: 0
+Errors: 0
+Skipped: 0
 
 ## Architecture
 
@@ -268,6 +287,20 @@ The request contains a file field named:
 file
 ```
 
+### Swagger UI
+
+When the application is running, Swagger UI is available at:
+
+```text
+/swagger-ui/index.html
+```
+
+The OpenAPI specification is available at:
+
+```text
+/v3/api-docs
+```
+
 The authenticated user is determined by the JWT rather than being supplied by the client.
 
 
@@ -285,7 +318,7 @@ The authenticated user is determined by the JWT rather than being supplied by th
 
 ## Project Status
 
-🚧 **In active development**
+✅ **Completed as a Spring Boot learning projec**
 
 Current focus:
 

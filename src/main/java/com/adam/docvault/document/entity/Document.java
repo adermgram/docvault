@@ -60,6 +60,24 @@ public class Document {
 
     }
 
+
+    //package private constructuctor for testing
+    Document(
+            UUID id,
+            User owner,
+            String originalFilename,
+            String contentType,
+            long size,
+            String storageKey
+    ) {
+        this.id = id;
+        this.owner = owner;
+        this.originalFilename = originalFilename;
+        this.contentType = contentType;
+        this.size = size;
+        this.storageKey = storageKey;
+    }
+
     public UUID getId(){
         return id;
     }
